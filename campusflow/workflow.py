@@ -6,6 +6,10 @@ def assign_ticket(tickets):
         if ticket["id"] == ticket_id:
             ticket_found = True
 
+            if ticket["status"] == "resolved":
+                print("Resolved tickets must be reopened before reassignment.")
+                break
+
             while True:
                 staff_name = input("Enter the staff name: ")
                 staff_name = staff_name.strip()

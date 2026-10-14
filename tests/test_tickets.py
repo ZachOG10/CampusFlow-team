@@ -26,6 +26,10 @@ class TestTickets(unittest.TestCase):
         test_affected_users = create_ticket("Wifi", "Network", "medium", 0)
         self.assertIsNone(test_affected_users)
 
+    def test_boolean_affected_users(self):
+        test_boolean_users = create_ticket("wifi", "Network", "medium", True)
+        self.assertIsNone(test_boolean_users)
+
     def test_negative_affected_users(self):
         test_negative_users = create_ticket("Wifi", "Network", "medium", -3)
         self.assertIsNone(test_negative_users)
