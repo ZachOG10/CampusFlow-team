@@ -205,7 +205,6 @@ def run_check(questions=None, input_fn=input, output_fn=print,
 
 
 def save_explanations(path, engineer_label, result, questions=None):
-    """Append a learner's score and explanations to a local notes file."""
     if questions is None:
         questions = QUESTION_BANK
     by_id = {question["id"]: question for question in questions}
