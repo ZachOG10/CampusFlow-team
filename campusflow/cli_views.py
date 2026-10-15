@@ -80,7 +80,6 @@ def search_view(tickets, input_fn=input, output_fn=print):
     category = prompt_filter("Category", VALID_CATEGORIES, input_fn, output_fn)
     status = prompt_filter("Status", VALID_STATUSES, input_fn, output_fn)
     priority = prompt_filter("Priority", VALID_PRIORITIES, input_fn, output_fn)
-
     results = search_tickets(tickets, title, category, status, priority)
 
     if results:
@@ -158,7 +157,6 @@ def view_notes_view(tickets, input_fn=input, output_fn=print):
     if ticket is None:
         output_fn("Ticket not found. Please enter a valid ticket ID.")
         return None
-
     output_fn(format_ticket_notes(ticket))
     return ticket
 

@@ -22,7 +22,6 @@ except ImportError:
 
 EXIT_OPTION = 11
 
-
 def display_ticket_report(tickets):
     report = generate_ticket_report(tickets)
     print()
