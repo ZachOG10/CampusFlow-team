@@ -20,6 +20,8 @@ GOOD_EXPLANATION_2 = "Duplicate IDs fail validation so memory is never replaced.
 
 
 class ScriptedInput:
+    """Replaces input(): returns the next scripted reply each time it is called."""
+
     def __init__(self, replies):
         self.replies = list(replies)
 
@@ -30,8 +32,6 @@ class ScriptedInput:
 
 
 class OutputCollector:
-    """Replaces print(): stores every line for assertions."""
-
     def __init__(self):
         self.lines = []
 
@@ -43,7 +43,6 @@ class OutputCollector:
 
 
 def full_run_inputs(answer_letters, explanation_numbers=("1", "5")):
-    """Build scripted input: six answers, then two (number, explanation) pairs."""
     return list(answer_letters) + [
         explanation_numbers[0], GOOD_EXPLANATION_1,
         explanation_numbers[1], GOOD_EXPLANATION_2,
@@ -125,7 +124,7 @@ class TestInvalidAnswersAreRejected(unittest.TestCase):
 
     def test_invalid_answers_do_not_change_the_score(self):
         out = OutputCollector()
-       
+        # Q1 gets two bad entries before the correct 'B'.
         inputs = full_run_inputs(["X", "?", "B", "C", "B", "C", "C", "B"])
 
         result = run_check(input_fn=ScriptedInput(inputs), output_fn=out)
@@ -135,7 +134,7 @@ class TestInvalidAnswersAreRejected(unittest.TestCase):
 
     def test_first_valid_answer_is_the_one_recorded(self):
         out = OutputCollector()
-       
+        # Q1 answered 'A' (wrong). Feedback is shown; the answer is not changed.
         inputs = full_run_inputs(["A", "C", "B", "C", "C", "B"])
 
         result = run_check(input_fn=ScriptedInput(inputs), output_fn=out)
@@ -222,14 +221,13 @@ class TestExplanations(unittest.TestCase):
         self.assertIn("already explained", self.out.text())
 
     def test_explanation_is_not_auto_graded(self):
-    
         out = OutputCollector()
         inputs = ["A", "C", "B", "C", "C", "B", "1", "accept reject unchanged preserve", "2",
                   "zero percent because of reasons"]
 
         result = run_check(input_fn=ScriptedInput(inputs), output_fn=out)
 
-        self.assertEqual(result["score"], 5) 
+        self.assertEqual(result["score"], 5)  # decided only by submitted letters
 
     def test_is_valid_explanation(self):
         self.assertTrue(is_valid_explanation("Rejected so data stays unchanged."))
