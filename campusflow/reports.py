@@ -44,11 +44,6 @@ def generate_ticket_report(tickets):
 
 
 def format_report(report):
-    """Turn a report dictionary into printable text (no printing here).
-
-    Keeping formatting separate from printing lets tests check the text
-    without capturing stdout.
-    """
     lines = [
         "****** TICKET REPORT *******",
         f"Total tickets: {report['total_tickets']}",
