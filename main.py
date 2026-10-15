@@ -6,25 +6,27 @@ from campusflow.workflow import (
     reopen_ticket,
     get_work_queue,
 )
-from campusflow.reports import generate_ticket_report
+from campusflow.reports import generate_ticket_report, format_report
+from campusflow.cli_views import (
+    parse_menu_choice,
+    search_view,
+    add_note_view,
+    view_notes_view,
+    understanding_check_view,
+)
+
+try:
+    from campusflow.notes import add_note
+except ImportError:
+    add_note = None
+
+EXIT_OPTION = 11
 
 
 def display_ticket_report(tickets):
     report = generate_ticket_report(tickets)
-
-    print("\n------- TICKET REPORT -------")
-    print(f"Total tickets: {report['total_tickets']}")
-
-    print("\nTickets by status:")
-    print(f"Open: {report['open']}")
-    print(f"In progress: {report['in_progress']}")
-    print(f"Resolved: {report['resolved']}")
-
-    print("\nTickets by priority:")
-    print(f"Critical: {report['critical']}")
-    print(f"High: {report['high']}")
-    print(f"Medium: {report['medium']}")
-    print(f"Low: {report['low']}")
+    print()
+    print(format_report(report))
 
 
 def display_all_tickets(tickets):
@@ -43,6 +45,7 @@ def display_all_tickets(tickets):
         print(f"Status: {ticket['status']}")
         print(f"Assigned to: {ticket['assigned_to']}")
 
+
 def main():
     try:
         all_tickets = load_tickets()
@@ -50,9 +53,15 @@ def main():
         print(f"Unable to load saved tickets: {error}")
         return
 
+    if add_note is None:
+        add_note_for_cli = None
+    else:
+        def add_note_for_cli(ticket_id, author, message):
+            return add_note(all_tickets, ticket_id, author, message)
+
     campus = 0
 
-    while campus != 7:
+    while campus != EXIT_OPTION:
         print("\n======= WELCOME TO CAMPUSFLOW =======")
         print("1. Create a ticket")
         print("2. View all tickets")
@@ -60,12 +69,19 @@ def main():
         print("4. Update ticket status")
         print("5. View work queue")
         print("6. Generate ticket report")
-        print("7. Exit")
+        print("7. Search tickets")
+        print("8. Add follow-up note")
+        print("9. View ticket notes")
+        print("10. Engineering Understanding Check")
+        print("11. Exit")
 
-        try:
-            campus = int(input("Choose an option (1-7): "))
-        except ValueError:
-            print("Kindly enter a valid number.")
+        campus = parse_menu_choice(
+            input(f"Choose an option (1-{EXIT_OPTION}): "), 1, EXIT_OPTION
+        )
+
+        if campus is None:
+            print(f"Kindly enter a valid number from 1 to {EXIT_OPTION}.")
+            campus = 0
             continue
 
         if campus == 1:
@@ -158,10 +174,10 @@ def main():
             if not work_queue:
                 print("There are no open tickets in the work queue.")
             else:
-                print("\n------- WORK QUEUE -------")
-                
+                print("\n****** WORK QUEUE ********")
+
                 for ticket in work_queue:
-                    print("\n------------------------------")
+                    print("\n****************************")
                     print(f"ID: {ticket['id']}")
                     print(f"Title: {ticket['title']}")
                     print(f"Priority: {ticket['priority']}")
@@ -172,11 +188,22 @@ def main():
             display_ticket_report(all_tickets)
 
         elif campus == 7:
+            search_view(all_tickets)
+
+        elif campus == 8:
+            if add_note_view(all_tickets, add_note_for_cli):
+                save_tickets(all_tickets)
+
+        elif campus == 9:
+            view_notes_view(all_tickets)
+
+        elif campus == 10:
+            understanding_check_view()
+
+        elif campus == EXIT_OPTION:
             save_tickets(all_tickets)
             print("Thank you for using CampusFlow!")
 
-        else:
-            print("Enter a number from 1 to 7.")
 
 if __name__ == "__main__":
     main()
