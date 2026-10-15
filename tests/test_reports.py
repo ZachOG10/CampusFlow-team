@@ -74,8 +74,6 @@ class TestOriginalReportBehaviour(unittest.TestCase):
 
 
 class TestEmptyReport(unittest.TestCase):
-    """Acceptance case 10: empty report returns 0%, no crash."""
-
     def test_empty_ticket_list_has_all_zero_counts(self):
         report = generate_ticket_report([])
 
