@@ -49,5 +49,27 @@ class TestTickets(unittest.TestCase):
         test_low = create_ticket("wifi", "network", "low", 2)
         self.assertEqual(test_low["priority"], "low")
 
+    def test_new_ticket_continues_after_highest_existing_id(self):
+        existing = [{"id": "T001"}, {"id": "T005"}]
+        ticket = create_ticket("Projector broken", "Hardware", "low", 1, existing)
+        self.assertEqual(ticket["id"], "T006")
+
+    def test_first_ticket_with_empty_existing_list_is_t001(self):
+        ticket = create_ticket("Projector broken", "Hardware", "low", 1, [])
+        self.assertEqual(ticket["id"], "T001")
+
+    def test_id_does_not_repeat_after_restart(self):
+        import campusflow.tickets
+        campusflow.tickets.count = 1
+        saved = [create_ticket("Wifi down", "Network", "high", 12, [])]
+        campusflow.tickets.count = 1 
+        new = create_ticket("Printer jam", "Hardware", "low", 1, saved)
+        self.assertNotEqual(new["id"], saved[0]["id"])
+
+    def test_new_ticket_has_empty_notes_and_trimmed_title(self):
+        ticket = create_ticket("  Wifi down  ", "Network", "high", 12)
+        self.assertEqual(ticket["notes"], [])
+        self.assertEqual(ticket["title"], "Wifi down")
+
 if __name__ == "__main__":
     unittest.main()
