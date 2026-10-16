@@ -1,6 +1,15 @@
 count = 1
 
-def create_ticket(title, category, urgency, affected_users, all_tickets):
+def next_ticket_number(all_tickets):
+    highest = 0
+    for ticket in all_tickets:
+        try:
+            highest = max(highest, int(str(ticket["id"])[1:]))
+        except (KeyError, ValueError):
+            continue
+    return highest + 1
+
+def create_ticket(title, category, urgency, affected_users, all_tickets=None):
     global count
     if not isinstance(title, str) or title.strip() == "":
         return None
@@ -22,15 +31,21 @@ def create_ticket(title, category, urgency, affected_users, all_tickets):
     else:
         priority = "low"
         
+    if all_tickets is not None:
+        number = next_ticket_number(all_tickets)
+    else:
+        number = count
+
     ticket = {
-        "id": f"T{count:03}",
-        "title": title,
+        "id": f"T{number:03}",
+        "title": title.strip(),
         "category": category,
         "urgency": urgency,
         "affected_users": affected_users,
         "status": "open",
         "assigned_to": None,
-        "priority": priority
+        "priority": priority,
+        "notes": [],
     }
-    count += 1
+    count = number + 1
     return ticket
