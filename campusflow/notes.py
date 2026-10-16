@@ -1,23 +1,33 @@
-def add_note_to_ticket(ticket, author, message):
-    if ticket["status"] not in ["open", "in_progress"]:
-        raise ValueError("Cannot add notes to a resolved ticket.")
-    
-    cleaned_author = author.strip()
-    cleaned_message = message.strip()
-    
-    if not cleaned_author:
-        raise ValueError("Author cannot be blank.")
-    if not (5 <= len(cleaned_message) <= 300):
+note_count = 1
+
+def validate_note_author(author):
+    if not isinstance(author, str) or author.strip() == "":
+        raise ValueError("Author cannot be empty.")
+    return author.strip()
+
+def validate_note_message(message):
+    if not isinstance(message, str) or not (5 <= len(message) <= 300):
         raise ValueError("Message must be between 5 and 300 characters.")
+    return message
+
+def add_note(ticket, author, message):
+    global note_count
     
-        next_id_num = len(ticket.get("notes", [])) + 1
-    note_id = f"N{next_id_num:03d}" 
+    validated_author = validate_note_author(author)
+    validated_message = validate_note_message(message)
     
-    new_note = {
-        "note_id": note_id,
-        "author": cleaned_author,
-        "message": cleaned_message
+    if ticket.get("status") == "resolved":
+        raise ValueError("Cannot add notes to a resolved ticket.")
+        
+    note = {
+        "id": f"N{note_count:03}",
+        "author": validated_author,
+        "message": validated_message
     }
     
-    ticket["notes"].append(new_note)
-    return ticket
+    note_count += 1
+    if "notes" not in ticket:
+        ticket["notes"] = []
+    ticket["notes"].append(note)
+    
+    return note
