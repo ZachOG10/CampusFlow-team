@@ -19,7 +19,6 @@ NOTES_FILE = (
 
 
 def parse_menu_choice(raw, lowest, highest):
-    """Return the menu number if raw is a whole number in range, else None."""
     if not isinstance(raw, str):
         return None
     raw = raw.strip()
@@ -27,6 +26,18 @@ def parse_menu_choice(raw, lowest, highest):
         return None
     number = int(raw)
     return number if lowest <= number <= highest else None
+
+
+def prompt_ticket_title(input_fn=input, output_fn=print):
+    while True:
+        title = input_fn("Enter ticket title: ").strip()
+
+        if title == "":
+            output_fn("The title cannot be empty. Please enter a valid ticket title.")
+        elif any(char.isdigit() for char in title):
+            output_fn("The title cannot contain numbers. Please enter a valid ticket title.")
+        else:
+            return title
 
 
 def find_ticket(tickets, ticket_id):
