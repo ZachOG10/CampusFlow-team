@@ -10,6 +10,7 @@ from campusflow.cli_views import (
     format_ticket_notes,
     parse_menu_choice,
     prompt_filter,
+    prompt_ticket_title,
     search_view,
     understanding_check_view,
     view_notes_view,
@@ -95,7 +96,6 @@ class TestSearchView(unittest.TestCase):
         self.out = OutputCollector()
 
     def test_combined_filters_through_the_cli(self):
-        # title, category, status, priority, sort?
         fake_input = ScriptedInput(["wifi", "Network", "open", "", "n"])
 
         results = search_view(self.tickets, fake_input, self.out)
@@ -300,6 +300,90 @@ class TestUnderstandingCheckView(unittest.TestCase):
             understanding_check_view(ScriptedInput(replies), out, path)
 
         self.assertIn("The label cannot be blank.", out.text())
+
+
+class TestPromptTicketTitle(unittest.TestCase):
+    def test_empty_title_is_rejected_and_prompts_again(self):
+        out = OutputCollector()
+        fake_input = ScriptedInput(["", "Wifi down in library"])
+
+        title = prompt_ticket_title(fake_input, out)
+
+        self.assertEqual(title, "Wifi down in library")
+        self.assertEqual(fake_input.replies, [])
+        self.assertIn("The title cannot be empty", out.text())
+
+    def test_spaces_only_title_is_rejected(self):
+        out = OutputCollector()
+        fake_input = ScriptedInput(["   ", "\t", "Printer jam"])
+
+        title = prompt_ticket_title(fake_input, out)
+
+        self.assertEqual(title, "Printer jam")
+        self.assertEqual(out.text().count("The title cannot be empty"), 2)
+
+    def test_program_does_not_continue_until_a_valid_title_is_given(self):
+        fake_input = ScriptedInput(["", "", ""])  # never gives a valid title
+        with self.assertRaises(AssertionError):
+            prompt_ticket_title(fake_input, OutputCollector())
+
+    def test_title_with_numbers_is_still_rejected(self):
+        out = OutputCollector()
+        fake_input = ScriptedInput(["Lab 3 projector", "Lab projector"])
+
+        title = prompt_ticket_title(fake_input, out)
+
+        self.assertEqual(title, "Lab projector")
+        self.assertIn("cannot contain numbers", out.text())
+
+    def test_valid_title_is_trimmed(self):
+        self.assertEqual(
+            prompt_ticket_title(ScriptedInput(["  Wifi down  "]), OutputCollector()),
+            "Wifi down",
+        )
+
+
+class TestNotesViewsWithRealAddNote(unittest.TestCase):
+
+    def setUp(self):
+        from campusflow.notes import add_note
+        self.tickets = [make_ticket("T001", "Wifi down", "Network", "open", "high")]
+
+        def adapter(ticket_id, author, message):
+            ticket = find_ticket(self.tickets, ticket_id)
+            if ticket is None:
+                raise ValueError("Ticket not found.")
+            return add_note(ticket, author, message)
+
+        self.adapter = adapter
+
+    def test_add_then_view_notes_end_to_end(self):
+        out = OutputCollector()
+        added = add_note_view(
+            self.tickets, self.adapter,
+            ScriptedInput(["T001", "Mentor A", "Wi-Fi router reboot attempted"]), out,
+        )
+        self.assertTrue(added)
+        self.assertIn("Note N001 added to T001.", out.text())
+
+        out = OutputCollector()
+        view_notes_view(self.tickets, ScriptedInput(["T001"]), out)
+        self.assertIn("Note ID: N001", out.text())
+        self.assertIn("Wi-Fi router reboot attempted", out.text())
+
+    def test_rejected_note_on_resolved_ticket_shows_message(self):
+        self.tickets[0]["status"] = "resolved"
+        before = copy.deepcopy(self.tickets)
+        out = OutputCollector()
+
+        added = add_note_view(
+            self.tickets, self.adapter,
+            ScriptedInput(["T001", "Mentor A", "This should be rejected"]), out,
+        )
+
+        self.assertFalse(added)
+        self.assertIn("Note not added:", out.text())
+        self.assertEqual(self.tickets, before)
 
 
 if __name__ == "__main__":
