@@ -7,18 +7,16 @@ from campusflow.workflow import (
     get_work_queue,
 )
 from campusflow.reports import generate_ticket_report, format_report
+from campusflow.notes import add_note
 from campusflow.cli_views import (
+    find_ticket,
     parse_menu_choice,
+    prompt_ticket_title,
     search_view,
     add_note_view,
     view_notes_view,
     understanding_check_view,
 )
-
-try:
-    from campusflow.notes import add_note
-except ImportError:
-    add_note = None
 
 EXIT_OPTION = 11
 
@@ -52,11 +50,11 @@ def main():
         print(f"Unable to load saved tickets: {error}")
         return
 
-    if add_note is None:
-        add_note_for_cli = None
-    else:
-        def add_note_for_cli(ticket_id, author, message):
-            return add_note(all_tickets, ticket_id, author, message)
+    def add_note_for_cli(ticket_id, author, message):
+        ticket = find_ticket(all_tickets, ticket_id)
+        if ticket is None:
+            raise ValueError("Ticket not found.")
+        return add_note(ticket, author, message)
 
     campus = 0
 
@@ -86,18 +84,7 @@ def main():
         if campus == 1:
             print("\nYou selected Create a ticket.")
 
-            title = input("Enter ticket title: ")
-            has_digit = False
-            for char in title:
-                if char.isdigit():
-                    has_digit = True
-            while title.strip() == "" or has_digit:
-                print("Enter a valid ticket title!")
-                title = input("Enter ticket title: ")
-                has_digit = False
-                for char in title:
-                    if char.isdigit():
-                        has_digit = True
+            title = prompt_ticket_title()
 
             category = input("Enter ticket category(software/Hardware/Network/other): ")
             while category.strip() == "" or category.strip().title() not in ["Network", "Hardware", "Software", "Other"]:
