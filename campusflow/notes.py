@@ -20,7 +20,7 @@ def add_note(ticket, author, message):
         raise ValueError("Cannot add notes to a resolved ticket.")
         
     note = {
-        "id": f"N{note_count:03}",
+        "note_id": f"N{note_count:03}",
         "author": validated_author,
         "message": validated_message
     }

@@ -1,6 +1,6 @@
 count = 1
 
-def create_ticket(title, category, urgency, affected_users):
+def create_ticket(title, category, urgency, affected_users, all_tickets):
     global count
     if not isinstance(title, str) or title.strip() == "":
         return None
