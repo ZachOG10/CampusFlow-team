@@ -11,7 +11,6 @@ from campusflow.search import (
 
 
 def make_ticket(ticket_id, title, category, status, priority):
-    """Small helper so each fixture ticket has every field search reads."""
     return {
         "id": ticket_id,
         "title": title,
@@ -39,8 +38,6 @@ def ids(tickets):
 
 
 class TestTitleSearch(unittest.TestCase):
-    """Acceptance case 08: title search ignores case, matches substrings."""
-
     def setUp(self):
         self.tickets = sample_tickets()
 

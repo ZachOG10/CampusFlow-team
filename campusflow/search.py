@@ -12,15 +12,6 @@ PRIORITY_ORDER = {
 
 
 def normalize_filter(value, allowed):
-    """Clean one filter value typed by a user.
-
-    Returns:
-        None            -> blank/None input, meaning "no filter".
-        a string        -> the matching value from `allowed` (canonical form).
-    Raises:
-        ValueError      -> value is not blank and not in `allowed`.
-                           The CLI uses this to re-prompt.
-    """
     if value is None:
         return None
     if not isinstance(value, str):
@@ -38,7 +29,7 @@ def normalize_filter(value, allowed):
 
 
 def search_tickets(tickets, title="", category=None, status=None, priority=None):
-    
+  
     title_query = "" if title is None else str(title).strip().casefold()
     category = normalize_filter(category, VALID_CATEGORIES)
     status = normalize_filter(status, VALID_STATUSES)
@@ -60,7 +51,6 @@ def search_tickets(tickets, title="", category=None, status=None, priority=None)
 
 
 def sort_results_by_priority(results):
-    
     return sorted(
         results,
         key=lambda ticket: (

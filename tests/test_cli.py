@@ -18,8 +18,6 @@ from campusflow.search import VALID_CATEGORIES
 
 
 class ScriptedInput:
-    """Replaces input(): returns the next scripted reply on each call."""
-
     def __init__(self, replies):
         self.replies = list(replies)
 
@@ -30,7 +28,6 @@ class ScriptedInput:
 
 
 class OutputCollector:
-    """Replaces print(): stores every line."""
 
     def __init__(self):
         self.lines = []
